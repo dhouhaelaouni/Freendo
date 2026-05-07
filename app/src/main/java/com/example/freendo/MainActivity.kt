@@ -17,5 +17,9 @@ class MainActivity : AppCompatActivity() {
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNav.setupWithNavController(navController)
+
+        if (intent.getBooleanExtra("goToLogin", false)) {
+            navController.navigate(R.id.loginFragment)
+        }
     }
 }

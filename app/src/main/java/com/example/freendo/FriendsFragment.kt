@@ -1,59 +1,112 @@
 package com.example.freendo
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldPath
+import com.google.firebase.firestore.FirebaseFirestore
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [FriendsFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class FriendsFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore
+    private lateinit var uid: String
+
+    private lateinit var etSearchUser: EditText
+    private lateinit var btnSearch: Button
+    private lateinit var tvSearchResult: TextView
+    private lateinit var btnAddFriend: Button
+    private lateinit var rvFriends: RecyclerView
+
+    private var foundFriendId: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_friends, container, false)
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment FriendsFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            FriendsFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance()
+        uid = auth.currentUser?.uid ?: return
+
+        etSearchUser = view.findViewById(R.id.etSearchUser)
+        btnSearch = view.findViewById(R.id.btnSearch)
+        tvSearchResult = view.findViewById(R.id.tvSearchResult)
+        btnAddFriend = view.findViewById(R.id.btnAddFriend)
+        rvFriends = view.findViewById(R.id.rvFriends)
+
+        // Step 14: Set up RecyclerView
+        rvFriends.layoutManager = LinearLayoutManager(context)
+
+        // Step 16: Wire Search button
+        btnSearch.setOnClickListener {
+            val query = etSearchUser.text.toString().trim()
+            if (query.isEmpty()) return@setOnClickListener
+
+            db.collection("users")
+                .whereEqualTo("username", query)
+                .get()
+                .addOnSuccessListener { docs ->
+                    if (docs.isEmpty) {
+                        tvSearchResult.text = "No user found"
+                        btnAddFriend.visibility = View.GONE
+                    } else {
+                        val doc = docs.first()
+                        foundFriendId = doc.id
+                        tvSearchResult.text = "Found: ${doc.getString("name")}"
+                        btnAddFriend.visibility = View.VISIBLE
+                    }
                 }
+        }
+
+        // Step 17: Wire Add Friend button
+        btnAddFriend.setOnClickListener {
+            val fid = foundFriendId ?: return@setOnClickListener
+            val data = hashMapOf("userId" to uid, "friendId" to fid)
+            db.collection("friends").add(data)
+                .addOnSuccessListener {
+                    Toast.makeText(context, "Friend added!", Toast.LENGTH_SHORT).show()
+                    btnAddFriend.visibility = View.GONE
+                    loadFriends()   // refresh the list
+                }
+        }
+
+        loadFriends()
+    }
+
+    // Step 18: loadFriends() helper function
+    private fun loadFriends() {
+        db.collection("friends")
+            .whereEqualTo("userId", uid)
+            .get()
+            .addOnSuccessListener { docs ->
+                val friendIds = docs.map { it.getString("friendId") ?: "" }.filter { it.isNotEmpty() }
+                if (friendIds.isEmpty()) {
+                    rvFriends.adapter = FriendAdapter(emptyList())
+                    return@addOnSuccessListener
+                }
+
+                db.collection("users")
+                    .whereIn(FieldPath.documentId(), friendIds)
+                    .get()
+                    .addOnSuccessListener { users ->
+                        val names = users.map { it.getString("name") ?: "Unknown" }
+                        rvFriends.adapter = FriendAdapter(names)
+                    }
             }
     }
 }
