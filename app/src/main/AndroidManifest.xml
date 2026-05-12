@@ -28,5 +28,6 @@
             android:theme="@style/Theme.Freendo" />
 
     </application>
+    <uses-permission android:name="android.permission.INTERNET"/>
 
 </manifest>

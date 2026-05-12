@@ -1,12 +1,23 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
 }
+
 val nav_version = "2.7.7"
 val glide_version = "4.16.0"
 val retrofit_version = "2.9.0"
 val okhttp_version = "4.12.0"
+
+// Load local.properties
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
 android {
     namespace = "com.example.freendo"
     compileSdk = 36
@@ -17,6 +28,10 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+
+        // Explicitly read from localProperties or project properties
+        val openAiKey = localProperties.getProperty("OPENAI_KEY") ?: project.findProperty("OPENAI_KEY") ?: ""
+        buildConfigField("String", "OPENAI_KEY", "\"$openAiKey\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -36,6 +51,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
