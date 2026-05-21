@@ -1,6 +1,7 @@
 package com.example.freendo
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
@@ -17,6 +18,22 @@ class MainActivity : AppCompatActivity() {
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNav.setupWithNavController(navController)
+
+        // Handle Bottom Navigation visibility
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.loginFragment, 
+                R.id.registerFragment, 
+                R.id.createEventFragment, 
+                R.id.categoryDetailFragment,
+                R.id.editProfileFragment -> {
+                    bottomNav.visibility = View.GONE
+                }
+                else -> {
+                    bottomNav.visibility = View.VISIBLE
+                }
+            }
+        }
 
         if (intent.getBooleanExtra("goToLogin", false)) {
             navController.navigate(R.id.loginFragment)

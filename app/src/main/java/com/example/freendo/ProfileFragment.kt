@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
@@ -33,6 +34,7 @@ class ProfileFragment : Fragment() {
         tvBio = view.findViewById(R.id.tvBio)
         tvInterests = view.findViewById(R.id.tvInterests)
         val btnEditProfile = view.findViewById<Button>(R.id.btnEditProfile)
+        val btnLogout = view.findViewById<ImageButton>(R.id.btnLogout)
 
         // Step 6: Read user doc from Firestore
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
@@ -52,6 +54,14 @@ class ProfileFragment : Fragment() {
         btnEditProfile.setOnClickListener {
             findNavController().navigate(
                 R.id.action_profileFragment_to_editProfileFragment
+            )
+        }
+
+        // Logout logic
+        btnLogout.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+            findNavController().navigate(
+                R.id.action_profileFragment_to_loginFragment
             )
         }
     }

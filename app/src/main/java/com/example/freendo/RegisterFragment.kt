@@ -6,15 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
-/**
- * A simple [Fragment] subclass.
- */
 class RegisterFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
@@ -30,9 +28,9 @@ class RegisterFragment : Fragment() {
         db = FirebaseFirestore.getInstance()
 
         view.findViewById<Button>(R.id.btnRegister).setOnClickListener {
-            val name = view.findViewById<TextInputEditText>(R.id.etName).text.toString().trim()
-            val email = view.findViewById<TextInputEditText>(R.id.etEmail).text.toString().trim()
-            val password = view.findViewById<TextInputEditText>(R.id.etPassword).text.toString().trim()
+            val name = view.findViewById<EditText>(R.id.etName).text.toString().trim()
+            val email = view.findViewById<EditText>(R.id.etEmail).text.toString().trim()
+            val password = view.findViewById<EditText>(R.id.etPassword).text.toString().trim()
 
             if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(requireContext(), "Fill all fields", Toast.LENGTH_SHORT).show()
@@ -62,6 +60,10 @@ class RegisterFragment : Fragment() {
                 .addOnFailureListener {
                     Toast.makeText(requireContext(), "Auth Error: ${it.message}", Toast.LENGTH_SHORT).show()
                 }
+        }
+
+        view.findViewById<TextView>(R.id.tvToLogin).setOnClickListener {
+            findNavController().popBackStack()
         }
     }
 }

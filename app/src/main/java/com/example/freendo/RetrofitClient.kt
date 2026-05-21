@@ -7,8 +7,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    // Changed v1beta to v1 as gemini-1.5-flash is stable and supported there
-    private const val BASE_URL = "https://generativelanguage.googleapis.com/v1/"
+    // Domain only - the version and model will be specified in the interface
+    private const val BASE_URL = "https://generativelanguage.googleapis.com/"
 
     val openAiService: OpenAiService by lazy {
         val logging = HttpLoggingInterceptor().apply {

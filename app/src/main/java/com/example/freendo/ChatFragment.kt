@@ -1,6 +1,7 @@
 package com.example.freendo
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -47,23 +48,26 @@ class ChatFragment : Fragment() {
     }
 
     private fun sendMessage(userText: String, rvChat: RecyclerView) {
-        // Show user bubble
         chatAdapter.addMessage(ChatBubble(userText, isUser = true))
         rvChat.scrollToPosition(messages.size - 1)
 
-        // Gemini Request Format
         val request = GeminiRequest(
             contents = listOf(
                 GeminiContent(
                     parts = listOf(
-                        GeminiPart(text = "Suggest a fun social activity: $userText")
+                        GeminiPart(text = "You are a helpful social assistant. Suggest a fun activity based on this message: $userText")
                     )
                 )
             )
         )
 
-        // Use the Gemini API key directly (not as a Bearer token)
-        val apiKey = BuildConfig.OPENAI_KEY
+        // Trim the API key to avoid any potential whitespace issues causing 404/403
+        val apiKey = BuildConfig.GEMINI_API_KEY.trim()
+
+        if (apiKey.isEmpty()) {
+            chatAdapter.addMessage(ChatBubble("⚠️ API Key is missing in local.properties", isUser = false))
+            return
+        }
 
         RetrofitClient.openAiService.sendMessage(apiKey, request)
             .enqueue(object : Callback<GeminiResponse> {
@@ -75,8 +79,11 @@ class ChatFragment : Fragment() {
                         response.body()?.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text
                             ?: "No response received"
                     } else {
-                        "Error ${response.code()}: ${response.errorBody()?.string() ?: response.message()}"
+                        val errorBody = response.errorBody()?.string()
+                        Log.e("ChatFragment", "API Error: $errorBody")
+                        "Error ${response.code()}: ${response.message()}"
                     }
+                    
                     activity?.runOnUiThread {
                         chatAdapter.addMessage(ChatBubble(aiText, isUser = false))
                         rvChat.scrollToPosition(messages.size - 1)
@@ -84,6 +91,7 @@ class ChatFragment : Fragment() {
                 }
 
                 override fun onFailure(call: Call<GeminiResponse>, t: Throwable) {
+                    Log.e("ChatFragment", "Network Failure", t)
                     activity?.runOnUiThread {
                         chatAdapter.addMessage(
                             ChatBubble("⚠️ Network error: ${t.message}", isUser = false)

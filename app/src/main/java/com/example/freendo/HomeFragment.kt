@@ -4,11 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -30,6 +31,8 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val tvWelcome = view.findViewById<TextView>(R.id.tvWelcome)
+
         // Setup My Events RecyclerView
         myEventsAdapter = EventAdapter(emptyList())
         val rvMyEvents = view.findViewById<RecyclerView>(R.id.rvMyEvents)
@@ -43,12 +46,25 @@ class HomeFragment : Fragment() {
         rvInvitedEvents.adapter = invitedEventsAdapter
 
         // Create Event button
-        view.findViewById<Button>(R.id.btnCreateEvent).setOnClickListener {
+        view.findViewById<FloatingActionButton>(R.id.fabAddEvent).setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_createEventFragment)
         }
 
+        loadUserProfile(tvWelcome)
         loadMyEvents()
         loadInvitedEvents()
+    }
+
+    private fun loadUserProfile(tvWelcome: TextView) {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("users").document(uid)
+            .get()
+            .addOnSuccessListener { doc ->
+                if (doc.exists()) {
+                    val name = doc.getString("name") ?: "User"
+                    tvWelcome.text = "Hey $name 👋"
+                }
+            }
     }
 
     private fun loadMyEvents() {

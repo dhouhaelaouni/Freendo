@@ -29,9 +29,9 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        // Explicitly read from localProperties or project properties
-        val openAiKey = localProperties.getProperty("OPENAI_KEY") ?: project.findProperty("OPENAI_KEY") ?: ""
-        buildConfigField("String", "OPENAI_KEY", "\"$openAiKey\"")
+        // Rename variable to GEMINI_API_KEY for clarity
+        val geminiKey = localProperties.getProperty("GEMINI_API_KEY") ?: project.findProperty("GEMINI_API_KEY") ?: ""
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiKey\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

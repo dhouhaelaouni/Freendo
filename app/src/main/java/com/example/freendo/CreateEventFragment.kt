@@ -32,11 +32,16 @@ class CreateEventFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val btnBack = view.findViewById<ImageButton>(R.id.btnBack)
         val tvDateTime = view.findViewById<TextView>(R.id.tvSelectedDateTime)
         val etTitle = view.findViewById<EditText>(R.id.etTitle)
         val etLocation = view.findViewById<EditText>(R.id.etLocation)
         val etNotes = view.findViewById<EditText>(R.id.etNotes)
         val llFriends = view.findViewById<LinearLayout>(R.id.llFriendsContainer)
+
+        btnBack.setOnClickListener {
+            findNavController().navigateUp()
+        }
 
         // Date & Time picker
         view.findViewById<Button>(R.id.btnPickDateTime).setOnClickListener {

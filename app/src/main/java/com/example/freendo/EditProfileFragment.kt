@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -14,7 +15,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class EditProfileFragment : Fragment() {
 
-    private lateinit var etName: EditText
     private lateinit var etUsername: EditText
     private lateinit var etBio: EditText
     private lateinit var etInterests: EditText
@@ -33,31 +33,31 @@ class EditProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        etName = view.findViewById(R.id.etName)
+        val btnBack = view.findViewById<ImageButton>(R.id.btnBack)
         etUsername = view.findViewById(R.id.etUsername)
         etBio = view.findViewById(R.id.etBio)
         etInterests = view.findViewById(R.id.etInterests)
-        btnSave = view.findViewById(R.id.btnSave)
+        btnSave = view.findViewById(R.id.btnSaveChanges)
 
         db = FirebaseFirestore.getInstance()
         uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
-        // Step 9: Pre-fill fields when fragment opens
+        btnBack.setOnClickListener {
+            findNavController().navigateUp()
+        }
+
         db.collection("users").document(uid)
             .get()
             .addOnSuccessListener { doc ->
                 if (doc.exists()) {
-                    etName.setText(doc.getString("name"))
                     etUsername.setText(doc.getString("username"))
                     etBio.setText(doc.getString("bio"))
                     etInterests.setText(doc.getString("interests"))
                 }
             }
 
-        // Step 10: Save button writes back to Firestore
         btnSave.setOnClickListener {
             val updates = hashMapOf(
-                "name"      to etName.text.toString(),
                 "username"  to etUsername.text.toString(),
                 "bio"       to etBio.text.toString(),
                 "interests" to etInterests.text.toString()
@@ -69,7 +69,6 @@ class EditProfileFragment : Fragment() {
                     findNavController().popBackStack()
                 }
                 .addOnFailureListener {
-                    // Fallback to set if update fails (e.g. document doesn't exist)
                     db.collection("users").document(uid).set(updates)
                         .addOnSuccessListener {
                             Toast.makeText(context, "Saved!", Toast.LENGTH_SHORT).show()
