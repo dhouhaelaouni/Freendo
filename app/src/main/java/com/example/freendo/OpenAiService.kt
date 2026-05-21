@@ -24,8 +24,7 @@ data class GeminiResponse(val candidates: List<GeminiCandidate>)
 
 interface OpenAiService {
     /**
-     * Using models/gemini-1.5-flash:generateContent.
-     * Note: 'v1beta/' is already included in the RetrofitClient BASE_URL.
+     * Using models/gemini-1.5-flash:generateContent on the stable v1 API.
      */
     @POST("models/gemini-1.5-flash:generateContent")
     fun sendMessage(

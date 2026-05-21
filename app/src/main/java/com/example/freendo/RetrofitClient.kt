@@ -7,8 +7,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
-    // Standard base URL including the API version
-    private const val BASE_URL = "https://generativelanguage.googleapis.com/v1beta/"
+    // Switching to the stable v1 API to avoid 404s on v1beta
+    private const val BASE_URL = "https://generativelanguage.googleapis.com/v1/"
 
     val openAiService: OpenAiService by lazy {
         val logging = HttpLoggingInterceptor().apply {
